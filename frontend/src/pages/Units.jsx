@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Home, MoreVertical, Plus } from 'lucide-react';
 import Table from '../components/Table';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 
 const Units = () => {
+  const toast = useToast();
   const [units, setUnits] = useState([]);
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,15 +23,9 @@ const Units = () => {
   const fetchUnits = async (currentPage) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/units?page=${currentPage}&size=10`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUnits(data.items);
-        setPages(data.pages);
-      }
+      const data = await api.get(`/units?page=${currentPage}&size=10`);
+      setUnits(data.items);
+      setPages(data.pages);
     } catch (error) {
       console.error("Error fetching units", error);
     } finally {
@@ -38,14 +35,8 @@ const Units = () => {
 
   const fetchProperties = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/properties?page=1&size=100`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProperties(data.items);
-      }
+      const data = await api.get(`/properties?page=1&size=100`);
+      setProperties(data.items);
     } catch (error) {
       console.error("Error fetching properties", error);
     }
@@ -59,29 +50,18 @@ const Units = () => {
   const handleCreateUnit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/units', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          property_id: parseInt(formData.property_id),
-          monthly_rent: parseFloat(formData.monthly_rent),
-          deposit_amount: parseFloat(formData.deposit_amount)
-        })
+      await api.post('/units', {
+        ...formData,
+        property_id: parseInt(formData.property_id),
+        monthly_rent: parseFloat(formData.monthly_rent),
+        deposit_amount: parseFloat(formData.deposit_amount)
       });
-      if (response.ok) {
-        setShowModal(false);
-        setFormData({ property_id: '', unit_number: '', monthly_rent: '', deposit_amount: '0', status: 'AVAILABLE' });
-        fetchUnits(page);
-      } else {
-        alert("Failed to create unit. Ensure property exists.");
-      }
+      setShowModal(false);
+      setFormData({ property_id: '', unit_number: '', monthly_rent: '', deposit_amount: '0', status: 'AVAILABLE' });
+      fetchUnits(page);
+      toast.success('Unit added', `${formData.unit_number} is now available in your inventory.`);
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to create unit', error.message);
     }
   };
 
@@ -100,8 +80,8 @@ const Units = () => {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
-          <div style={{ width: '400px', backgroundColor: 'var(--color-bg-card)', height: '100%', padding: '32px', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column' }}>
+        <div className="slide-over-backdrop" onClick={() => setShowModal(false)}>
+          <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: '8px' }}>Create New Unit</h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '32px', fontSize: '0.875rem' }}>Add a new unit to an existing property location.</p>
             

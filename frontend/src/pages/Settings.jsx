@@ -1,37 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { User, Building, Shield, Bell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Settings = () => {
-  const [profile, setProfile] = useState({ full_name: '', email: '', role: '' });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/users/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(data);
-        }
-      } catch (error) {
-        console.error("Error fetching profile", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
-
-  if (loading) {
-    return (
-      <div style={{ padding: '24px' }}>
-        <div className="skeleton" style={{ height: '200px', width: '100%', borderRadius: 'var(--radius-lg)' }}></div>
-      </div>
-    );
-  }
+  const { user } = useAuth();
+  const profile = user || { full_name: '', email: '', role: '' };
 
   return (
     <div>

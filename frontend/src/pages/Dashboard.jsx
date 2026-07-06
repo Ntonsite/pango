@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Home, Users, DollarSign, AlertCircle } from 'lucide-react';
+import { Home, Users, DollarSign, AlertCircle, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
+import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
+
+const getGreeting = (hour) => {
+  if (hour < 5) return { text: 'Good night', Icon: Moon };
+  if (hour < 12) return { text: 'Good morning', Icon: Sunrise };
+  if (hour < 17) return { text: 'Good afternoon', Icon: Sun };
+  if (hour < 21) return { text: 'Good evening', Icon: Sunset };
+  return { text: 'Good night', Icon: Moon };
+};
 
 const chartData = [
   { name: 'Jan', collected: 12000000 },
@@ -13,20 +23,15 @@ const chartData = [
 ];
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/dashboard/stats', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
+        const data = await api.get('/dashboard/stats');
+        setStats(data);
       } catch (error) {
         console.error("Error fetching stats", error);
       } finally {
@@ -35,6 +40,9 @@ const Dashboard = () => {
     };
     fetchStats();
   }, []);
+
+  const { text: greetingText, Icon: GreetingIcon } = getGreeting(new Date().getHours());
+  const firstName = user?.full_name?.split(' ')[0];
 
   if (loading || !stats) {
     return (
@@ -48,6 +56,19 @@ const Dashboard = () => {
 
   return (
     <div>
+      <div className="greeting-card">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div className="greeting-icon">
+            <GreetingIcon size={26} />
+          </div>
+          <div>
+            <div className="greeting-eyebrow">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+            <div className="greeting-title">{greetingText}{firstName ? `, ${firstName}` : ''}</div>
+            <div className="greeting-sub">Here's how your portfolio is performing today.</div>
+          </div>
+        </div>
+      </div>
+
       <div className="page-header">
         <h1 className="page-title">Dashboard Overview</h1>
         <button className="btn btn-primary">+ New Property</button>

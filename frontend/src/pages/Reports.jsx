@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Download, TrendingUp } from 'lucide-react';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 
 const Reports = () => {
+  const toast = useToast();
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/reports/financial`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setReportData(data);
-      }
+      const data = await api.get(`/reports/financial`);
+      setReportData(data);
     } catch (error) {
       console.error("Error fetching reports", error);
     } finally {
@@ -54,10 +51,10 @@ const Reports = () => {
           )}
           
           <div style={{ marginTop: '32px', display: 'flex', gap: '12px' }}>
-            <button className="btn btn-primary" onClick={() => alert("Downloading PDF...")}>
+            <button className="btn btn-primary" onClick={() => toast.info('Coming soon', 'PDF export is on its way — check back shortly.')}>
               <Download size={18} style={{ marginRight: '8px' }} /> Download PDF Report
             </button>
-            <button className="btn btn-outline" onClick={() => alert("Exporting CSV...")}>
+            <button className="btn btn-outline" onClick={() => toast.info('Coming soon', 'CSV export is on its way — check back shortly.')}>
               Export CSV
             </button>
           </div>
@@ -76,7 +73,7 @@ const Reports = () => {
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '32px' }}>
             Generates a comprehensive breakdown of vacant vs occupied units, current tenant details, and upcoming contract expirations.
           </p>
-          <button className="btn btn-outline btn-full">
+          <button className="btn btn-outline btn-full" onClick={() => toast.info('Coming soon', 'Occupancy report generation is on its way.')}>
             Generate Report
           </button>
         </div>

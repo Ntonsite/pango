@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Users, MoreVertical, Plus } from 'lucide-react';
 import Table from '../components/Table';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const Tenants = () => {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [tenants, setTenants] = useState([]);
   const [units, setUnits] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,15 +27,9 @@ const Tenants = () => {
   const fetchTenants = async (currentPage) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/tenants?page=${currentPage}&size=10`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTenants(data.items);
-        setPages(data.pages);
-      }
+      const data = await api.get(`/tenants?page=${currentPage}&size=10`);
+      setTenants(data.items);
+      setPages(data.pages);
     } catch (error) {
       console.error("Error fetching tenants", error);
     } finally {
@@ -40,15 +39,9 @@ const Tenants = () => {
 
   const fetchAvailableUnits = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/units?page=1&size=100`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        // Filter only available units for assignment
-        setUnits(data.items.filter(u => u.status === 'AVAILABLE'));
-      }
+      const data = await api.get(`/units?page=1&size=100`);
+      // Filter only available units for assignment
+      setUnits(data.items.filter(u => u.status === 'AVAILABLE'));
     } catch (error) {
       console.error("Error fetching units", error);
     }
@@ -62,47 +55,36 @@ const Tenants = () => {
   const handleCreateTenant = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/tenants', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          unit_id: parseInt(formData.unit_id),
-          contract_start: new Date(formData.contract_start).toISOString(),
-          contract_end: new Date(formData.contract_end).toISOString()
-        })
+      await api.post('/tenants', {
+        ...formData,
+        unit_id: parseInt(formData.unit_id),
+        contract_start: new Date(formData.contract_start).toISOString(),
+        contract_end: new Date(formData.contract_end).toISOString()
       });
-      if (response.ok) {
-        setShowModal(false);
-        setFormData({ full_name: '', phone_number: '', email: '', unit_id: '', contract_start: '', contract_end: '', status: 'ACTIVE' });
-        fetchTenants(page);
-        fetchAvailableUnits();
-      } else {
-        alert("Failed to create tenant. Ensure unit is selected.");
-      }
+      setShowModal(false);
+      setFormData({ full_name: '', phone_number: '', email: '', unit_id: '', contract_start: '', contract_end: '', status: 'ACTIVE' });
+      fetchTenants(page);
+      fetchAvailableUnits();
+      toast.success('Tenant added', `${formData.full_name} has been assigned to their unit.`);
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to create tenant', error.message);
     }
   };
 
-  const handleMoveOut = async (tenantId) => {
-    if (!confirm("Are you sure this tenant has moved out? This will release the unit.")) return;
+  const handleMoveOut = async (tenantId, tenantName) => {
+    const confirmed = await confirm({
+      title: 'Confirm move-out',
+      message: `Mark ${tenantName} as moved out? This will release their unit for a new tenant.`,
+      confirmLabel: 'Yes, moved out',
+    });
+    if (!confirmed) return;
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/tenants/${tenantId}/status?status_in=MOVED_OUT`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        fetchTenants(page);
-        fetchAvailableUnits();
-      }
+      await api.put(`/tenants/${tenantId}/status?status_in=MOVED_OUT`);
+      fetchTenants(page);
+      fetchAvailableUnits();
+      toast.success('Tenant moved out', `${tenantName}'s unit is now available.`);
     } catch (error) {
-      console.error("Error updating status", error);
+      toast.error('Failed to update tenant', error.message);
     }
   };
 
@@ -121,8 +103,8 @@ const Tenants = () => {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
-          <div style={{ width: '400px', backgroundColor: 'var(--color-bg-card)', height: '100%', padding: '32px', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column' }}>
+        <div className="slide-over-backdrop" onClick={() => setShowModal(false)}>
+          <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: '8px' }}>Add New Tenant</h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '32px', fontSize: '0.875rem' }}>Assign a tenant to an available unit and establish their contract terms.</p>
             
@@ -197,8 +179,8 @@ const Tenants = () => {
               </td>
               <td>
                 {tenant.status === 'ACTIVE' && (
-                  <button 
-                    onClick={() => handleMoveOut(tenant.id)}
+                  <button
+                    onClick={() => handleMoveOut(tenant.id, tenant.full_name)}
                     style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--color-primary)' }}
                   >
                     Move Out

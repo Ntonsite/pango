@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Users, MoreVertical, Plus } from 'lucide-react';
 import Table from '../components/Table';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 
 const UsersManagement = () => {
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -18,15 +21,9 @@ const UsersManagement = () => {
   const fetchUsers = async (currentPage) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/users?page=${currentPage}&size=10`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.items);
-        setPages(data.pages);
-      }
+      const data = await api.get(`/users?page=${currentPage}&size=10`);
+      setUsers(data.items);
+      setPages(data.pages);
     } catch (error) {
       console.error("Error fetching users", error);
     } finally {
@@ -39,23 +36,13 @@ const UsersManagement = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        setShowModal(false);
-        fetchUsers(page);
-      } else {
-        alert("Failed to create user. Ensure you have Admin privileges.");
-      }
+      await api.post('/users', formData);
+      setShowModal(false);
+      setFormData({ email: '', full_name: '', password: '', role: 'MANAGER' });
+      fetchUsers(page);
+      toast.success('User created', `${formData.full_name} can now sign in with the role of ${formData.role.replace('_', ' ').toLowerCase()}.`);
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to create user', error.message);
     }
   };
 
@@ -74,8 +61,8 @@ const UsersManagement = () => {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ backgroundColor: 'var(--color-bg-card)', padding: '32px', borderRadius: 'var(--radius-lg)', width: '400px' }}>
+        <div className="dialog-backdrop" onClick={() => setShowModal(false)}>
+          <div className="dialog-card" style={{ width: '400px', textAlign: 'left' }} onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: '16px' }}>Create New User</h2>
             <form onSubmit={handleCreateUser}>
               <div className="form-group">

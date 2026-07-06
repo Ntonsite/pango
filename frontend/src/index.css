@@ -817,3 +817,57 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
     margin-top: -26px;
   }
 }
+
+/* Bottom sheet (mobile "More" menu) */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 16, 15, 0.45);
+  z-index: 250;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fade-in 0.2s ease-out;
+}
+
+.sheet-panel {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-lg) + var(--safe-bottom));
+  box-shadow: var(--shadow-lg);
+  animation: sheet-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-border);
+  margin: 4px auto 16px;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-main);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sheet-item:active {
+  background-color: var(--color-bg-subtle);
+}
+
+.sheet-item.danger {
+  color: var(--color-danger);
+}

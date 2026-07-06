@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Building, MapPin, MoreVertical, Plus } from 'lucide-react';
 import Table from '../components/Table';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 
 const Properties = () => {
+  const toast = useToast();
+  const { user } = useAuth();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -13,15 +18,9 @@ const Properties = () => {
   const fetchProperties = async (currentPage) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/properties?page=${currentPage}&size=10`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProperties(data.items);
-        setPages(data.pages);
-      }
+      const data = await api.get(`/properties?page=${currentPage}&size=10`);
+      setProperties(data.items);
+      setPages(data.pages);
     } catch (error) {
       console.error("Error fetching properties", error);
     } finally {
@@ -34,26 +33,17 @@ const Properties = () => {
   const handleCreateProperty = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/properties', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        setShowModal(false);
-        setFormData({ name: '', address: '', description: '' });
-        fetchProperties(page);
-      } else {
-        alert("Failed to create property. Ensure you have proper permissions.");
-      }
+      await api.post('/properties', formData);
+      setShowModal(false);
+      setFormData({ name: '', address: '', description: '' });
+      fetchProperties(page);
+      toast.success('Property added', `${formData.name} is now part of your portfolio.`);
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to create property', error.message);
     }
   };
+
+  const canCreate = user?.role !== 'MANAGER';
 
   return (
     <div>
@@ -62,15 +52,16 @@ const Properties = () => {
           <h1 className="page-title">Properties</h1>
           <p style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>Manage all your property locations here.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={18} style={{ marginRight: '4px' }} /> Add New Property
-        </button>
+        {canCreate && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+            <Plus size={18} style={{ marginRight: '4px' }} /> Add New Property
+          </button>
+        )}
       </div>
 
-      {/* Right-aligned Modal / Slide Over Panel */}
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
-          <div style={{ width: '400px', backgroundColor: 'var(--color-bg-card)', height: '100%', padding: '32px', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column' }}>
+        <div className="slide-over-backdrop" onClick={() => setShowModal(false)}>
+          <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: '8px' }}>Create New Property</h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '32px', fontSize: '0.875rem' }}>Enter the details of the new property to add it to your workspace.</p>
             
@@ -112,7 +103,7 @@ const Properties = () => {
           <Building size={48} color="var(--color-text-muted)" style={{ margin: '0 auto 16px' }} />
           <h3>No Properties Found</h3>
           <p style={{ color: 'var(--color-text-muted)', marginTop: '8px', marginBottom: '24px' }}>Get started by adding your first property.</p>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Property</button>
+          {canCreate && <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Property</button>}
         </div>
       ) : (
         <div className="dashboard-grid">

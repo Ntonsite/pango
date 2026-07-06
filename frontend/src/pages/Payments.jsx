@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { CreditCard, Download, Search, Plus } from 'lucide-react';
 import Table from '../components/Table';
+import { api } from '../api';
+import { useToast } from '../context/ToastContext';
 
 const Payments = () => {
+  const toast = useToast();
   const [payments, setPayments] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,15 +23,9 @@ const Payments = () => {
   const fetchPayments = async (currentPage) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/payments?page=${currentPage}&size=10`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPayments(data.items);
-        setPages(data.pages);
-      }
+      const data = await api.get(`/payments?page=${currentPage}&size=10`);
+      setPayments(data.items);
+      setPages(data.pages);
     } catch (error) {
       console.error("Error fetching payments", error);
     } finally {
@@ -38,14 +35,8 @@ const Payments = () => {
 
   const fetchActiveTenants = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/tenants?page=1&size=100`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTenants(data.items.filter(t => t.status === 'ACTIVE'));
-      }
+      const data = await api.get(`/tenants?page=1&size=100`);
+      setTenants(data.items.filter(t => t.status === 'ACTIVE'));
     } catch (error) {
       console.error("Error fetching tenants", error);
     }
@@ -59,28 +50,17 @@ const Payments = () => {
   const handleCreatePayment = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          tenant_id: parseInt(formData.tenant_id),
-          amount: parseFloat(formData.amount)
-        })
+      await api.post('/payments', {
+        ...formData,
+        tenant_id: parseInt(formData.tenant_id),
+        amount: parseFloat(formData.amount)
       });
-      if (response.ok) {
-        setShowModal(false);
-        setFormData({ tenant_id: '', amount: '', payment_method: 'Mobile Money', reference_number: '', status: 'COMPLETED' });
-        fetchPayments(page);
-      } else {
-        alert("Failed to record payment.");
-      }
+      setShowModal(false);
+      setFormData({ tenant_id: '', amount: '', payment_method: 'Mobile Money', reference_number: '', status: 'COMPLETED' });
+      fetchPayments(page);
+      toast.success('Payment recorded', `TZS ${Number(formData.amount).toLocaleString()} recorded successfully.`);
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to record payment', error.message);
     }
   };
 
@@ -104,8 +84,8 @@ const Payments = () => {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 100, display: 'flex', justifyContent: 'flex-end' }}>
-          <div style={{ width: '400px', backgroundColor: 'var(--color-bg-card)', height: '100%', padding: '32px', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column' }}>
+        <div className="slide-over-backdrop" onClick={() => setShowModal(false)}>
+          <div className="slide-over-panel" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ marginBottom: '8px' }}>Record Payment</h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '32px', fontSize: '0.875rem' }}>Manually record a rent payment received from a tenant.</p>
             
