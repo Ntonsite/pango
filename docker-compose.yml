@@ -5,8 +5,6 @@ services:
       POSTGRES_USER: pango_user
       POSTGRES_PASSWORD: pango_password
       POSTGRES_DB: pango_db
-    ports:
-      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -20,8 +18,6 @@ services:
 
   redis:
     image: redis:alpine
-    ports:
-      - "6381:6379"
     networks:
       - pango_network
     healthcheck:
@@ -47,8 +43,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    ports:
-      - "8000:8000"
     networks:
       - pango_network
 

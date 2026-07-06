@@ -6,10 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      // Routed through HAProxy (which does its own /api path-stripping) rather
+      // than straight to the backend, since the backend no longer publishes a
+      // host port on its own.
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
