@@ -552,6 +552,14 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
   100% { background-position: -200% 0; }
 }
 
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Slide-over panel (used by create/edit forms) */
 .slide-over-backdrop {
   position: fixed;

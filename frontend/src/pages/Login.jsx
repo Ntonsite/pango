@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('admin@pango.co.tz');
   const [password, setPassword] = useState('Password123!');
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ const Login = () => {
       }
 
       const data = await response.json();
-      localStorage.setItem('token', data.access_token);
+      await login(data.access_token);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -95,7 +97,7 @@ const Login = () => {
             </div>
             
             <button type="submit" className="btn btn-primary btn-full" disabled={loading} style={{ marginTop: '16px', height: '48px', fontSize: '1rem' }}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? (<><Loader2 className="spin" size={18} /> Signing in...</>) : 'Sign In'}
             </button>
           </form>
           
