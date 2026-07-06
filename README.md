@@ -24,12 +24,17 @@ Workspace, and Owners/Managers can only ever see their own workspace's data.
 ## Getting started
 
 ```bash
+./start.sh   # build + up -d + tail logs, all in one
+# or step by step:
 ./build.sh   # docker compose build
 ./run.sh     # docker compose up -d
 ```
 
-The app is served at **http://localhost:8080** (via HAProxy, which fronts
-both the frontend and the `/api/*` backend routes).
+The app is served on **port 80** (via HAProxy, which fronts both the
+frontend and the `/api/*` backend routes) — e.g. `http://localhost` locally,
+or `http://your-server-ip` in production. HAProxy's stats page is on
+**8404**. Set `CORS_ORIGINS` (see `backend/.env.example`) to your real
+origin(s) before deploying anywhere other than localhost.
 
 New users are created via invite link (Owner invites a Manager, Platform
 Admin onboards a workspace Owner) rather than a shared password — see

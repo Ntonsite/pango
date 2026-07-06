@@ -41,7 +41,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://pango_user:pango_password@postgres:5432/pango_db
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=supersecretkey_pango
-      - CORS_ORIGINS=http://localhost:8080,http://localhost:5173
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost,http://localhost:5173}
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,7 +67,7 @@ services:
     build:
       context: ./haproxy
     ports:
-      - "8080:80"
+      - "80:80"
       - "8404:8404"
     depends_on:
       - frontend

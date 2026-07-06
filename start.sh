@@ -8,7 +8,7 @@ echo "Starting Pango Services..."
 docker compose up -d
 
 echo ""
-echo "Services are running! Access the application at http://localhost:8080"
+echo "Services are running! Access the application at http://localhost"
 echo "Tailing logs (Ctrl+C stops watching, services keep running in the background)..."
 echo ""
 
