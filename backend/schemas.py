@@ -55,6 +55,12 @@ class AcceptInviteRequest(BaseModel):
     token: str
     password: str
 
+class SignupRequest(BaseModel):
+    workspace_name: str
+    full_name: str
+    email: EmailStr
+    password: str
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

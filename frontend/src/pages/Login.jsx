@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Building, Loader2, ShieldCheck, Crown, Wrench, ChevronDown } from 'lucide-react';
+import { Building, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const DEMO_ACCOUNTS = [
-  { role: 'Platform Admin', email: 'admin@platform.com', password: 'Password123!', Icon: ShieldCheck, note: 'Manages the whole SaaS platform' },
-  { role: 'Workspace Owner', email: 'owner@tonyproperties.com', password: 'Password123!', Icon: Crown, note: 'Full control of Tony Properties Ltd' },
-  { role: 'Workspace Manager', email: 'manager@tonyproperties.com', password: 'Password123!', Icon: Wrench, note: 'Day-to-day operations only' },
-];
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,7 +12,6 @@ const Login = () => {
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showDemo, setShowDemo] = useState(false);
   const expired = searchParams.get('expired') === '1';
 
   const handleLogin = async (e) => {
@@ -53,12 +46,6 @@ const Login = () => {
     }
   };
 
-  const applyDemoAccount = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setShowDemo(false);
-  };
-
   return (
     <div className="auth-container">
       <div className="auth-sidebar">
@@ -73,7 +60,7 @@ const Login = () => {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="auth-form-container" style={{ borderRadius: 'var(--radius-lg)' }}>
           <h2 style={{ marginBottom: '8px', fontSize: '1.75rem', fontWeight: 700 }}>Welcome Back</h2>
-          <p style={{ marginBottom: '24px', color: 'var(--color-text-muted)' }}>Enter your credentials to access your workspace.</p>
+          <p style={{ marginBottom: '32px', color: 'var(--color-text-muted)' }}>Enter your credentials to access your workspace.</p>
 
           {expired && (
             <div style={{ padding: '12px', backgroundColor: 'var(--color-warning-bg)', color: 'var(--color-warning)', borderRadius: 'var(--radius-md)', marginBottom: '16px', fontSize: '0.875rem' }}>
@@ -86,39 +73,6 @@ const Login = () => {
               {error}
             </div>
           )}
-
-          <div style={{ marginBottom: '24px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-            <button
-              type="button"
-              onClick={() => setShowDemo(!showDemo)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--color-bg-subtle)', border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-main)' }}
-            >
-              Try a demo account
-              <ChevronDown size={16} style={{ transform: showDemo ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
-            </button>
-            {showDemo && (
-              <div style={{ padding: '8px' }}>
-                {DEMO_ACCOUNTS.map((account) => (
-                  <button
-                    key={account.email}
-                    type="button"
-                    onClick={() => applyDemoAccount(account)}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '10px', border: 'none', background: 'transparent', borderRadius: 'var(--radius-md)', cursor: 'pointer', textAlign: 'left' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--color-bg-subtle)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                  >
-                    <div style={{ width: '36px', height: '36px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--color-primary-soft)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <account.Icon size={18} />
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{account.role}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.email}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <form onSubmit={handleLogin}>
             <div className="form-group">
@@ -157,7 +111,7 @@ const Login = () => {
           </form>
 
           <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-            Multi-tenant SaaS &mdash; every workspace's data stays isolated
+            Don't have a workspace? <Link to="/signup" style={{ color: 'var(--color-primary)', fontWeight: 500 }}>Create one</Link>
           </div>
         </div>
       </div>

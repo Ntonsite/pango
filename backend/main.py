@@ -14,9 +14,11 @@ from models import (User, Workspace, RoleEnum, Property, Unit, Tenant, Payment, 
 from schemas import (Token, UserResponse, PropertyCreate, PropertyResponse,
                      UnitCreate, UnitResponse, TenantCreate, TenantResponse, PaymentCreate, PaymentResponse,
                      PaginatedResponse, InviteUserRequest, InviteResponse, AcceptInviteRequest,
-                     ForgotPasswordRequest, ResetPasswordRequest, UserUpdate, UserStatusUpdate, AnnouncementResponse)
+                     ForgotPasswordRequest, ResetPasswordRequest, SignupRequest, UserUpdate, UserStatusUpdate,
+                     AnnouncementResponse)
 from auth import verify_password, get_password_hash, create_access_token, generate_reset_token, ENVIRONMENT
 from deps import get_current_user, require_roles, require_workspace_user, PaginationParams, paginate
+from admin import log_action
 import admin
 
 logging.basicConfig(level=logging.INFO)
@@ -130,6 +132,37 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
 async def get_active_announcement(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Announcement).filter(Announcement.is_active == True))
     return result.scalars().first()
+
+
+# --- Self-service signup (public) ---
+
+@app.post("/auth/signup", response_model=Token)
+async def signup(payload: SignupRequest, db: AsyncSession = Depends(get_db)):
+    if len(payload.password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    result = await db.execute(select(User).filter(User.email == payload.email))
+    if result.scalars().first():
+        raise HTTPException(status_code=400, detail="An account with that email already exists")
+
+    workspace = Workspace(name=payload.workspace_name)
+    db.add(workspace)
+    await db.flush()
+
+    owner = User(
+        email=payload.email,
+        hashed_password=get_password_hash(payload.password),
+        full_name=payload.full_name,
+        role=RoleEnum.OWNER,
+        workspace_id=workspace.id,
+        is_active=True,
+    )
+    db.add(owner)
+    await db.commit()
+    await log_action(db, owner.email, "workspace.created", f"Self-service signup: '{workspace.name}'")
+
+    access_token = create_access_token(data={"email": owner.email, "role": owner.role, "workspace_id": owner.workspace_id})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 # --- Password reset / invite acceptance (public) ---
