@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, TypeVar, Generic
 from datetime import datetime
-from models import RoleEnum, UnitStatus, TenantStatus, PaymentStatus
+from models import RoleEnum, UnitStatus, TenantStatus, PaymentStatus, WorkspaceStatus, PlanEnum
 
 T = TypeVar('T')
 
@@ -27,15 +27,43 @@ class UserBase(BaseModel):
     role: RoleEnum
     workspace_id: Optional[int] = None
 
-class UserCreate(UserBase):
-    password: str
-
 class UserResponse(UserBase):
     id: int
     is_active: bool
     created_at: datetime
     class Config:
         from_attributes = True
+
+class AdminUserResponse(UserResponse):
+    workspace_name: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+
+class UserStatusUpdate(BaseModel):
+    is_active: bool
+
+class InviteUserRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+
+class InviteResponse(BaseModel):
+    user: UserResponse
+    invite_link: str
+
+class AcceptInviteRequest(BaseModel):
+    token: str
+    password: str
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
+class AdminResetPasswordResponse(BaseModel):
+    reset_link: str
 
 class PropertyBase(BaseModel):
     name: str
@@ -102,3 +130,84 @@ class PaymentResponse(PaymentBase):
     payment_date: datetime
     class Config:
         from_attributes = True
+
+class WorkspaceCreate(BaseModel):
+    name: str
+    owner_full_name: str
+    owner_email: EmailStr
+
+class WorkspaceResponse(BaseModel):
+    id: int
+    name: str
+    status: WorkspaceStatus
+    plan: PlanEnum
+    created_at: datetime
+    owner_email: Optional[str] = None
+    owner_full_name: Optional[str] = None
+    user_count: int = 0
+    class Config:
+        from_attributes = True
+
+class WorkspaceCreateResponse(BaseModel):
+    workspace: WorkspaceResponse
+    invite_link: str
+
+class WorkspaceStatusUpdate(BaseModel):
+    status: WorkspaceStatus
+
+class WorkspacePlanUpdate(BaseModel):
+    plan: PlanEnum
+
+class WorkspaceOverview(BaseModel):
+    workspace: WorkspaceResponse
+    totalProperties: int
+    totalUnits: int
+    occupiedUnits: int
+    totalTenants: int
+    monthlyCollectedIncome: float
+
+class FeatureFlagResponse(BaseModel):
+    id: int
+    key: str
+    label: str
+    description: Optional[str] = None
+    enabled: bool
+    class Config:
+        from_attributes = True
+
+class FeatureFlagUpdate(BaseModel):
+    enabled: bool
+
+class AnnouncementCreate(BaseModel):
+    message: str
+    is_active: bool = True
+
+class AnnouncementResponse(BaseModel):
+    id: int
+    message: str
+    is_active: bool
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class AuditLogResponse(BaseModel):
+    id: int
+    actor_email: str
+    action: str
+    detail: Optional[str] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class PlatformAnalyticsResponse(BaseModel):
+    total_workspaces: int
+    active_workspaces: int
+    suspended_workspaces: int
+    total_users: int
+    total_owners: int
+    total_managers: int
+    total_properties: int
+    total_units: int
+    total_tenants: int
+    total_collected: float
+    workspaces_by_month: List[dict]

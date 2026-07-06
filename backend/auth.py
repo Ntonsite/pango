@@ -1,8 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import jwt
 from passlib.context import CryptContext
 import os
+import secrets
+
+RESET_TOKEN_EXPIRE_MINUTES = 60 * 24 # 24 hours, used for both invite and forgot-password links
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey_pango")
@@ -25,3 +28,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def generate_reset_token():
+    """Single-use token for both the invite and forgot-password flows."""
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
+    return token, expires

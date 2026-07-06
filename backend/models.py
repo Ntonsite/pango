@@ -9,6 +9,15 @@ class RoleEnum(str, enum.Enum):
     OWNER = "OWNER"
     MANAGER = "MANAGER"
 
+class WorkspaceStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+
+class PlanEnum(str, enum.Enum):
+    FREE = "FREE"
+    BASIC = "BASIC"
+    PRO = "PRO"
+
 class UnitStatus(str, enum.Enum):
     AVAILABLE = "AVAILABLE"
     OCCUPIED = "OCCUPIED"
@@ -27,21 +36,28 @@ class Workspace(Base):
     __tablename__ = "workspaces"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
+    status = Column(Enum(WorkspaceStatus), default=WorkspaceStatus.ACTIVE, nullable=False)
+    plan = Column(Enum(PlanEnum), default=PlanEnum.FREE, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    users = relationship("User", back_populates="workspace")
-    properties = relationship("Property", back_populates="workspace")
+
+    users = relationship("User", back_populates="workspace", cascade="all, delete-orphan")
+    properties = relationship("Property", back_populates="workspace", cascade="all, delete-orphan")
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    hashed_password = Column(String, nullable=True)
     full_name = Column(String)
     role = Column(Enum(RoleEnum), default=RoleEnum.MANAGER)
     is_active = Column(Boolean, default=True)
     workspace_id = Column(Integer, ForeignKey("workspaces.id"), nullable=True) # Null for PLATFORM_ADMIN
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Single-use token shared by both the "invite" flow (new user, is_active=False,
+    # no usable password yet) and the "forgot password" flow (existing active user).
+    reset_token = Column(String, nullable=True, index=True)
+    reset_token_expires = Column(DateTime(timezone=True), nullable=True)
 
     workspace = relationship("Workspace", back_populates="users")
 
@@ -56,7 +72,7 @@ class Property(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     workspace = relationship("Workspace", back_populates="properties")
-    units = relationship("Unit", back_populates="property")
+    units = relationship("Unit", back_populates="property", cascade="all, delete-orphan")
 
 class Unit(Base):
     __tablename__ = "units"
@@ -69,7 +85,7 @@ class Unit(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     property = relationship("Property", back_populates="units")
-    tenants = relationship("Tenant", back_populates="unit")
+    tenants = relationship("Tenant", back_populates="unit", cascade="all, delete-orphan")
 
 class Tenant(Base):
     __tablename__ = "tenants"
@@ -84,7 +100,7 @@ class Tenant(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     unit = relationship("Unit", back_populates="tenants")
-    payments = relationship("Payment", back_populates="tenant")
+    payments = relationship("Payment", back_populates="tenant", cascade="all, delete-orphan")
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -95,5 +111,28 @@ class Payment(Base):
     payment_method = Column(String)
     reference_number = Column(String, nullable=True)
     status = Column(Enum(PaymentStatus), default=PaymentStatus.COMPLETED)
-    
+
     tenant = relationship("Tenant", back_populates="payments")
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    actor_email = Column(String, nullable=False)
+    action = Column(String, nullable=False)
+    detail = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class FeatureFlag(Base):
+    __tablename__ = "feature_flags"
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True, nullable=False)
+    label = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    enabled = Column(Boolean, default=False, nullable=False)
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(Text, nullable=False)
+    is_active = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
