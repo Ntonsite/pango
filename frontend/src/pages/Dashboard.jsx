@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Home, Users, DollarSign, Building, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
 import { api } from '../api';
@@ -23,6 +24,7 @@ const chartData = [
 ];
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ const Dashboard = () => {
 
       <div className="page-header">
         <h1 className="page-title">Dashboard Overview</h1>
-        <button className="btn btn-primary">+ New Property</button>
+        <button className="btn btn-primary" onClick={() => navigate('/properties', { state: { openCreate: true } })}>+ New Property</button>
       </div>
 
       <div className="dashboard-grid">

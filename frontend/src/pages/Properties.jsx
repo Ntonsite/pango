@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Building, MapPin, MoreVertical, Plus } from 'lucide-react';
 import Table from '../components/Table';
 import { api } from '../api';
@@ -8,12 +9,20 @@ import { useAuth } from '../context/AuthContext';
 const Properties = () => {
   const toast = useToast();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(!!location.state?.openCreate);
   const [formData, setFormData] = useState({ name: '', address: '', description: '' });
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, []);
 
   const fetchProperties = async (currentPage) => {
     setLoading(true);
