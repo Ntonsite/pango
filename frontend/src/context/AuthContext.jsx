@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../api';
+import { tokenStorage } from '../tokenStorage';
 
 const AuthContext = createContext(null);
 
@@ -8,16 +9,18 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
-    if (!localStorage.getItem('token')) {
+    if (!tokenStorage.get()) {
       setUser(null);
       setLoading(false);
-      return;
+      return null;
     }
     try {
       const me = await api.get('/users/me');
       setUser(me);
+      return me;
     } catch {
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -25,14 +28,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { loadUser(); }, [loadUser]);
 
-  const login = useCallback(async (token) => {
-    localStorage.setItem('token', token);
+  const login = useCallback(async (token, remember = true) => {
+    tokenStorage.set(token, remember);
     setLoading(true);
-    await loadUser();
+    return await loadUser();
   }, [loadUser]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
+    tokenStorage.clear();
     setUser(null);
   }, []);
 
