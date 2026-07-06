@@ -4,6 +4,7 @@ import Table from '../../components/Table';
 import { api } from '../../api';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import { copyToClipboard } from '../../clipboard';
 
 const PLAN_OPTIONS = ['FREE', 'BASIC', 'PRO'];
 
@@ -93,10 +94,14 @@ const Workspaces = () => {
     }
   };
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyLink = async () => {
+    const success = await copyToClipboard(inviteLink);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      toast.error('Copy failed', 'Select and copy the link manually.');
+    }
   };
 
   const columns = ['Workspace', 'Owner', 'Plan', 'Status', 'Users', 'Created', 'Actions'];
@@ -153,7 +158,7 @@ const Workspaces = () => {
               Share this one-time invite link with the new Owner so they can set their own password. It won't be shown again.
             </p>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-              <input className="form-input" readOnly value={inviteLink} style={{ fontSize: '0.75rem' }} />
+              <input className="form-input" readOnly value={inviteLink} onClick={(e) => e.target.select()} style={{ fontSize: '0.75rem' }} />
               <button className="btn btn-outline" onClick={copyLink} style={{ flexShrink: 0 }}>
                 {copied ? <Check size={16} /> : <Copy size={16} />}
               </button>
