@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Building, Home, Users, CreditCard, FileText, Settings, Search, Bell, LogOut, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import AnnouncementBanner from './AnnouncementBanner';
 
 const ALL_NAV_ITEMS = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -10,7 +11,7 @@ const ALL_NAV_ITEMS = [
   { name: 'Tenants', path: '/tenants', icon: Users },
   { name: 'Rent Payments', path: '/payments', icon: CreditCard },
   { name: 'Reports', path: '/reports', icon: FileText },
-  { name: 'Users', path: '/users', icon: Users, roles: ['PLATFORM_ADMIN', 'OWNER'] },
+  { name: 'Users', path: '/users', icon: Users, roles: ['OWNER'] },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
@@ -34,7 +35,9 @@ const Layout = () => {
   const overflowItems = navItems.filter((item) => !MOBILE_PRIMARY_PATHS.includes(item.path));
 
   return (
-    <div className="app-container">
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh' }}>
+      <AnnouncementBanner />
+      <div className="app-container" style={{ flex: 1, minHeight: 0 }}>
       <div className="sidebar">
         <div className="sidebar-header">
           <Building size={28} color="var(--color-primary)" />
@@ -125,6 +128,7 @@ const Layout = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
