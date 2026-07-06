@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -9,18 +10,20 @@ from typing import List
 
 from database import engine, Base, get_db, AsyncSessionLocal
 from models import User, Workspace, RoleEnum, Property, Unit, Tenant, Payment, PaymentStatus, UnitStatus, TenantStatus
-from schemas import (Token, UserResponse, UserCreate, PropertyCreate, PropertyResponse, 
+from schemas import (Token, UserResponse, UserCreate, PropertyCreate, PropertyResponse,
                      UnitCreate, UnitResponse, TenantCreate, TenantResponse, PaymentCreate, PaymentResponse, PaginatedResponse)
-from auth import verify_password, get_password_hash, create_access_token
+from auth import verify_password, get_password_hash, create_access_token, ENVIRONMENT
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Pango API")
 
+CORS_ORIGINS = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080").split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,8 +34,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
-    # Seed initial data
+
+    if ENVIRONMENT == "production":
+        return
+
+    # Seed demo/test accounts (development and staging only)
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(User).filter(User.email == "admin@pango.co.tz"))
         admin_user = result.scalars().first()
