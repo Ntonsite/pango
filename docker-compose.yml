@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: pango_user
+      POSTGRES_PASSWORD: pango_password
+      POSTGRES_DB: pango_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pango_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pango_user -d pango_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6381:6379"
+    networks:
+      - pango_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    image: pango-backend:latest
+    container_name: pango-api
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pango_user:pango_password@postgres:5432/pango_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=supersecretkey_pango
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - pango_network
+
+  frontend:
+    image: pango-frontend:latest
+    container_name: pango-web
+    build:
+      context: ./frontend
+    networks:
+      - pango_network
+    depends_on:
+      - backend
+
+  haproxy:
+    image: pango-haproxy:latest
+    build:
+      context: ./haproxy
+    ports:
+      - "8080:80"
+      - "8404:8404"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - pango_network
+
+networks:
+  pango_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
