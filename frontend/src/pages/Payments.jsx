@@ -73,7 +73,7 @@ const Payments = () => {
           <h1 className="page-title">Rent Payments</h1>
           <p style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>Track all incoming rent payments and outstanding balances.</p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="page-header-actions">
           <button className="btn" style={{ backgroundColor: 'white', border: '1px solid var(--color-border)', color: 'var(--color-text-main)' }}>
             <Download size={18} /> Export
           </button>
@@ -159,6 +159,23 @@ const Payments = () => {
                     </span>
                   </td>
                 </tr>
+              )}
+              renderMobileCard={(payment) => (
+                <div key={payment.id} className="mobile-card">
+                  <div className="mobile-card-row">
+                    <div className="mobile-card-title">
+                      <span>TZS {payment.amount.toLocaleString()}</span>
+                    </div>
+                    <span className={`badge ${payment.status === 'COMPLETED' ? 'badge-success' : 'badge-warning'}`}>
+                      {payment.status}
+                    </span>
+                  </div>
+                  <div className="mobile-card-meta">
+                    <span>{new Date(payment.payment_date).toLocaleDateString()}</span>
+                    <span>{payment.payment_method}</span>
+                    {payment.reference_number && <span>Ref: {payment.reference_number}</span>}
+                  </div>
+                </div>
               )}
             />
           </div>

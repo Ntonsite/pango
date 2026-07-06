@@ -157,6 +157,23 @@ const Units = () => {
               </td>
             </tr>
           )}
+          renderMobileCard={(unit) => (
+            <div key={unit.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <div className="mobile-card-title">
+                  <Home size={16} color="var(--color-text-muted)" />
+                  <span>{unit.unit_number}</span>
+                </div>
+                <span className={`badge ${unit.status === 'OCCUPIED' ? 'badge-primary' : unit.status === 'AVAILABLE' ? 'badge-success' : 'badge-warning'}`}>
+                  {unit.status}
+                </span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>Rent: TZS {unit.monthly_rent.toLocaleString()}</span>
+                <span>Deposit: TZS {unit.deposit_amount.toLocaleString()}</span>
+              </div>
+            </div>
+          )}
         />
       )}
     </div>

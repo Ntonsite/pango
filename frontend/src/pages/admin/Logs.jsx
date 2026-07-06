@@ -67,6 +67,18 @@ const Logs = () => {
               <td style={{ fontSize: '0.875rem' }}>{log.detail || '—'}</td>
             </tr>
           )}
+          renderMobileCard={(log) => (
+            <div key={log.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <span className="badge badge-secondary">{ACTION_LABELS[log.action] || log.action}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{new Date(log.created_at).toLocaleString()}</span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>{log.actor_email}</span>
+              </div>
+              {log.detail && <div className="mobile-card-meta" style={{ marginTop: '4px' }}>{log.detail}</div>}
+            </div>
+          )}
         />
       )}
     </div>

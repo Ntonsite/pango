@@ -221,6 +221,41 @@ const Workspaces = () => {
               </td>
             </tr>
           )}
+          renderMobileCard={(ws) => (
+            <div key={ws.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <div className="mobile-card-title">
+                  <Building2 size={16} color="var(--color-text-muted)" />
+                  <span>{ws.name}</span>
+                </div>
+                <span className={`badge ${ws.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>{ws.status}</span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>{ws.owner_full_name || '—'} ({ws.owner_email})</span>
+                <span>{ws.user_count} users &middot; {ws.plan} plan</span>
+                <span>Created {new Date(ws.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="mobile-card-actions">
+                <select className="form-input" style={{ flex: 1, padding: '8px 10px', fontSize: '0.8125rem' }} value={ws.plan} onChange={(e) => handlePlanChange(ws, e.target.value)}>
+                  {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+                <button
+                  title={ws.status === 'ACTIVE' ? 'Suspend' : 'Reactivate'}
+                  onClick={() => handleToggleStatus(ws)}
+                  style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: 'var(--color-text-muted)' }}
+                >
+                  {ws.status === 'ACTIVE' ? <Pause size={14} /> : <Play size={14} />}
+                </button>
+                <button
+                  title="Delete"
+                  onClick={() => handleDelete(ws)}
+                  style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: 'var(--color-danger)' }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         />
       )}
     </div>

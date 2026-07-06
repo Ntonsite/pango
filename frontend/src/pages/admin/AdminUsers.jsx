@@ -140,6 +140,31 @@ const AdminUsers = () => {
               </td>
             </tr>
           )}
+          renderMobileCard={(u) => (
+            <div key={u.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <div className="mobile-card-title">
+                  <span>{u.full_name}</span>
+                </div>
+                <span className={`badge ${roleBadge(u.role)}`}>{u.role.replace('_', ' ')}</span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>{u.email}</span>
+                <span>{u.workspace_name || '—'}</span>
+                <span className={`badge ${u.is_active ? 'badge-success' : 'badge-danger'}`}>{u.is_active ? 'Active' : 'Inactive'}</span>
+              </div>
+              {u.role !== 'PLATFORM_ADMIN' && (
+                <div className="mobile-card-actions">
+                  <button title="Reset password" onClick={() => handleResetPassword(u)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'center' }}>
+                    <KeyRound size={14} />
+                  </button>
+                  <button title={u.is_active ? 'Deactivate' : 'Reactivate'} onClick={() => handleToggleActive(u)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: u.is_active ? 'var(--color-danger)' : 'var(--color-success)', display: 'flex', justifyContent: 'center' }}>
+                    {u.is_active ? <Ban size={14} /> : <PlayCircle size={14} />}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         />
       )}
     </div>

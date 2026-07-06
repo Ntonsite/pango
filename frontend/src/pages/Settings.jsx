@@ -15,7 +15,7 @@ const Settings = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
+      <div className="settings-layout">
         {/* Settings Navigation */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button className="btn" style={{ justifyContent: 'flex-start', backgroundColor: 'var(--color-bg-card)', border: '1px solid var(--color-primary)', color: 'var(--color-primary)' }}>
@@ -47,7 +47,7 @@ const Settings = () => {
           </div>
 
           <form onSubmit={(e) => e.preventDefault()}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+            <div className="settings-field-grid">
               <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Full Name</label>
                 <input className="form-input" defaultValue={profile.full_name} />

@@ -217,6 +217,40 @@ const UsersManagement = () => {
               </td>
             </tr>
           )}
+          renderMobileCard={(user) => (
+            <div key={user.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <div className="mobile-card-title">
+                  <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.6875rem' }}>
+                    {user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                  </div>
+                  <span>{user.full_name}</span>
+                </div>
+                <span className={`badge ${user.role === 'OWNER' ? 'badge-warning' : 'badge-secondary'}`}>
+                  {user.role}
+                </span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>{user.email}</span>
+                <span className={`badge ${user.is_active ? 'badge-success' : 'badge-danger'}`}>
+                  {user.is_active ? 'Active' : 'Invite pending'}
+                </span>
+              </div>
+              {user.role !== 'OWNER' && (
+                <div className="mobile-card-actions">
+                  <button title="Edit" onClick={() => openEdit(user)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', justifyContent: 'center' }}>
+                    <Pencil size={14} />
+                  </button>
+                  <button title={user.is_active ? 'Deactivate' : 'Reactivate'} onClick={() => handleToggleActive(user)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: user.is_active ? 'var(--color-danger)' : 'var(--color-success)', display: 'flex', justifyContent: 'center' }}>
+                    {user.is_active ? <Ban size={14} /> : <PlayCircle size={14} />}
+                  </button>
+                  <button title="Delete" onClick={() => handleDelete(user)} style={{ flex: 1, background: 'none', border: '1px solid var(--color-border)', borderRadius: '6px', padding: '8px', cursor: 'pointer', color: 'var(--color-danger)', display: 'flex', justifyContent: 'center' }}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         />
       )}
     </div>

@@ -189,6 +189,32 @@ const Tenants = () => {
               </td>
             </tr>
           )}
+          renderMobileCard={(tenant) => (
+            <div key={tenant.id} className="mobile-card">
+              <div className="mobile-card-row">
+                <div className="mobile-card-title">
+                  <div className="avatar" style={{ width: '24px', height: '24px', fontSize: '0.6875rem' }}>
+                    {tenant.full_name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                  </div>
+                  <span>{tenant.full_name}</span>
+                </div>
+                <span className={`badge ${tenant.status === 'ACTIVE' ? 'badge-success' : 'badge-secondary'}`}>
+                  {tenant.status}
+                </span>
+              </div>
+              <div className="mobile-card-meta">
+                <span>{tenant.phone_number}</span>
+                <span>{new Date(tenant.contract_start).toLocaleDateString()} - {new Date(tenant.contract_end).toLocaleDateString()}</span>
+              </div>
+              {tenant.status === 'ACTIVE' && (
+                <div className="mobile-card-actions">
+                  <button className="btn btn-outline btn-full" onClick={() => handleMoveOut(tenant.id, tenant.full_name)}>
+                    Move Out
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         />
       )}
     </div>

@@ -227,6 +227,24 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
   letter-spacing: -0.01em;
 }
 
+.page-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-lg);
+}
+
+.settings-field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
 /* Greeting hero */
 .greeting-card {
   position: relative;
@@ -333,6 +351,10 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
   overflow: hidden;
 }
 
+.table-scroll {
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -393,6 +415,65 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
 .badge-secondary {
   background-color: var(--color-bg-subtle);
   color: var(--color-text-muted);
+}
+
+/* Mobile card list (replaces <table> on small screens) */
+.mobile-card-list {
+  display: none;
+  flex-direction: column;
+}
+
+.mobile-card {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mobile-card:last-child {
+  border-bottom: none;
+}
+
+.mobile-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: 6px;
+}
+
+.mobile-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  min-width: 0;
+}
+
+.mobile-card-title span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.mobile-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.mobile-card-empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 
 /* Charts */
@@ -767,6 +848,67 @@ h1, h2, h3, .page-title, .brand-name, .stat-card-value, .chart-title, .greeting-
 
   .slide-over-panel {
     width: 100%;
+    padding-bottom: calc(var(--spacing-xl) + var(--mobile-tab-bar-height) + var(--safe-bottom));
+  }
+
+  .dialog-backdrop {
+    padding-bottom: calc(var(--mobile-tab-bar-height) + var(--safe-bottom) + var(--spacing-lg));
+  }
+
+  .table-scroll {
+    display: none;
+  }
+
+  .mobile-card-list {
+    display: flex;
+  }
+
+  .settings-layout,
+  .settings-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header-actions {
+    width: 100%;
+  }
+
+  .page-header-actions .btn {
+    flex: 1;
+  }
+
+  .auth-container {
+    flex-direction: column;
+  }
+
+  .auth-sidebar {
+    flex: none;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    align-items: center;
+    text-align: center;
+  }
+
+  .auth-sidebar svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .auth-sidebar h1 {
+    font-size: 1.75rem;
+    margin-bottom: 8px;
+  }
+
+  .auth-sidebar p {
+    font-size: 0.9375rem;
+  }
+
+  .auth-sidebar p ~ p {
+    display: none;
+  }
+
+  .auth-form-container {
+    width: 100%;
+    padding: var(--spacing-xl) var(--spacing-lg);
+    box-shadow: none;
   }
 
   .toast-viewport {
