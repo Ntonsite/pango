@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Home, Users, DollarSign, AlertCircle, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
+import { Home, Users, DollarSign, Building, Sunrise, Sun, Sunset, Moon } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 

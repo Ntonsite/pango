@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CreditCard, Download, Search, Plus } from 'lucide-react';
+import { Download, Search, Plus } from 'lucide-react';
 import Table from '../components/Table';
 import { api } from '../api';
 import { useToast } from '../context/ToastContext';
